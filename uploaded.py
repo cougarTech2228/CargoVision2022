@@ -188,11 +188,16 @@ class Tester:
                     # check bbox validity
                     height, width, channels = frame_cv2.shape
                     if (0 <= ymin < ymax <= height) and (0 <= xmin < xmax <= width):
-                 
-                        x = int(xmin)
-                        y = int(ymin)
-                        w = int(xmax)
-                        h = int(ymax)
+                                   
+                        """           
+                        Check to see if the bounding box is "mostly" square. Cargo farther away or farther
+                        off angle from the center of the field of view seem to lose their squareness
+                        """                                  
+                        aspect_ratio_threshold = 0.30
+                        
+                        aspect_ratio = xmax / ymax                       
+                                           
+                        #if (aspect_ratio <= (1.0 + aspect_ratio_threshold)) and (aspect_ratio >= (1.0 - aspect_ratio_threshold)):
                         
                         ymin, xmin, ymax, xmax = int(bbox.ymin), int(bbox.xmin), int(bbox.ymax), int(bbox.xmax)
                                                                  
@@ -205,24 +210,37 @@ class Tester:
                         lower_red_mask = cv2.inRange(hsv_roi_image, lower_red1, upper_red1)
                         upper_red_mask = cv2.inRange(hsv_roi_image, lower_red2, upper_red2)
                         red_mask = lower_red_mask + upper_red_mask
-
-                        # The threshold value is correlated with the display resolution of the Pi camera
-                        threshold = 5000  #640 x 480 resolution
-
-                        count_red = cv2.countNonZero(red_mask)
+                       
+                        total_pixels = bbox.xmax * bbox.ymax
+                        
+                        """
+                        Based on experiments, it appears as though any ball with more than the following percentages
+                        of red or blue pixels can be classified as a red or blue cargo respectively. This assumes
+                        that there isn't other red/blue objects on the field that look close enough to a cargo ball.
+                        """
+                        red_threshold_percentage = 0.5 # yes, this is 0.5% ... just slightly over zero
+                        blue_threshold_percentage = 0.5 # yes, this is 0.5% ... just slightly over zero
+                        
+                        count_red = cv2.countNonZero(red_mask)               
                         
                         # The 'scores' value is actually the confidence that it is a "Ball" not a Red or Blue Cargo
-                        if count_red > threshold:
+                        if ((count_red / total_pixels) * 100.0) > red_threshold_percentage:
+
+                            #self.label_frame(frame_cv2, "C:" + str(count_red) + " P:" + str(total_pixels), boxes[i], scores[i], x_scale, y_scale)
+                            #self.label_frame(frame_cv2, "A:" + str(aspect_ratio), boxes[i], scores[i], x_scale, y_scale)
                             self.label_frame(frame_cv2, "RedCargo", boxes[i], scores[i], x_scale, y_scale)
                         else: 
                             blue_mask = cv2.inRange(hsv_roi_image, lower_blue, upper_blue)
                         
                             count_blue = cv2.countNonZero(blue_mask)
                             
-                            if count_blue > 0: 
+                            if ((count_blue / total_pixels) * 100.0) > blue_threshold_percentage:
+                                #self.label_frame(frame_cv2, "C:" + str(count_blue) + " P:" + str(total_pixels), boxes[i], scores[i], x_scale, y_scale)
+                                #self.label_frame(frame_cv2, "A:" + str(aspect_ratio), boxes[i], scores[i], x_scale, y_scale)
                                 self.label_frame(frame_cv2, "BlueCargo", boxes[i], scores[i], x_scale, y_scale)
                             else:                    
-                                self.label_frame(frame_cv2, "Unknown", boxes[i], scores[i], x_scale, y_scale)
+                                #self.label_frame(frame_cv2, "Unknown", boxes[i], scores[i], x_scale, y_scale)
+                                self.label_frame(frame_cv2, "R:" + str(count_red) + "B:" + str(count_blue) + "P:" + str(total_pixels), boxes[i], scores[i], x_scale, y_scale)
 
             self.output.putFrame(frame_cv2)
             self.entry.setString(json.dumps(self.temp_entry))
@@ -257,12 +275,12 @@ class Tester:
         # Draw label
         # Look up object name from "labels" array using class index
         label = '%s: %d%%' % (object_name, score * 100)  # Example: 'person: 72%'
-        label_size, base = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)  # Get font size
+        label_size, base = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 2)  # Get font size
         label_ymin = max(ymin, label_size[1] + 10)  # Make sure not to draw label too close to top of window
         cv2.rectangle(frame, (xmin, label_ymin - label_size[1] - 10), (xmin + label_size[0], label_ymin + base - 10),
                       (255, 255, 255), cv2.FILLED)
         # Draw label text
-        cv2.putText(frame, label, (xmin, label_ymin - 7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
+        cv2.putText(frame, label, (xmin, label_ymin - 7), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
         return frame
 
     def input_size(self):
