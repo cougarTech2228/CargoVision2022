@@ -139,20 +139,6 @@ class Tester:
         lower_blue = np.array([90,50,70])
         upper_blue = np.array([128,255,255])
         
-        # From GRIP
-        #lower_blue = np.array([49,7,55])
-        #upper_blue = np.array([133,171,255])
-
-        
-        # lower boundary BLUE color range values; Hue (0 - 10)
-        #lower_blue1 = np.array([0, 50, 50])
-        #upper_blue1 = np.array([10, 255, 255])
- 
-        # upper boundary BLUE color range values; Hue (160 - 180)
-        #lower_blue2 = np.array([160,50,50])
-        #upper_blue2 = np.array([179,255,255])
-
-        
         # lower boundary RED color range values; Hue (0 - 10)
         lower_red1 = np.array([0, 100, 20])
         upper_red1 = np.array([10, 255, 255])
@@ -161,9 +147,6 @@ class Tester:
         lower_red2 = np.array([160,100,20])
         upper_red2 = np.array([179,255,255])
         
-        # From GRIP
-        #lower_red = np.array([0,138,106])
-        #upper_red = np.array([180,255,255])
         min_roi_box_height = 40
         min_roi_box_width = 40
     
@@ -178,7 +161,7 @@ class Tester:
             # input
             scale = self.set_input(frame_cv2)
 
-            # run inference
+            # Run inference
             self.interpreter.invoke()
 
             # output
@@ -222,21 +205,14 @@ class Tester:
                         lower_red_mask = cv2.inRange(hsv_roi_image, lower_red1, upper_red1)
                         upper_red_mask = cv2.inRange(hsv_roi_image, lower_red2, upper_red2)
                         red_mask = lower_red_mask + upper_red_mask
-                        
-                        #red_mask = cv2.inRange(hsv_roi_image, lower_red, upper_red)
-                        
-                        #lower_blue_mask = cv2.inRange(hsv_roi_image, lower_blue1, upper_blue1)
-                        #upper_blue_mask = cv2.inRange(hsv_roi_image, lower_blue2, upper_blue2)
-                        #blue_mask = lower_blue_mask + upper_blue_mask
 
-                        # The threshold value is coorelated with the display resolution of the Pi camera
+                        # The threshold value is correlated with the display resolution of the Pi camera
                         threshold = 5000  #640 x 480 resolution
 
                         count_red = cv2.countNonZero(red_mask)
                         
                         # The 'scores' value is actually the confidence that it is a "Ball" not a Red or Blue Cargo
                         if count_red > threshold:
-                            #self.label_frame(frame_cv2, "RedCargo: " + str(count_red), boxes[i], scores[i], x_scale, y_scale)
                             self.label_frame(frame_cv2, "RedCargo", boxes[i], scores[i], x_scale, y_scale)
                         else: 
                             blue_mask = cv2.inRange(hsv_roi_image, lower_blue, upper_blue)
@@ -244,7 +220,6 @@ class Tester:
                             count_blue = cv2.countNonZero(blue_mask)
                             
                             if count_blue > 0: 
-                                #self.label_frame(frame_cv2, "BlueCargo: " + str(count_blue) + " H: " + str(h) + "W: " + str(w), boxes[i], scores[i], x_scale, y_scale)
                                 self.label_frame(frame_cv2, "BlueCargo", boxes[i], scores[i], x_scale, y_scale)
                             else:                    
                                 self.label_frame(frame_cv2, "Unknown", boxes[i], scores[i], x_scale, y_scale)
@@ -277,7 +252,6 @@ class Tester:
         self.temp_entry.append({"label": object_name, "box": {"ymin": ymin, "xmin": xmin, "ymax": ymax, "xmax": xmax},
                                 "confidence": score})
  
-
         cv2.rectangle(frame, (xmin, ymin), (xmax, ymax), (10, 255, 0), 4)
 
         # Draw label
