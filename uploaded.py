@@ -120,12 +120,34 @@ class Tester:
         self.temp_entry = []
 
         print("Starting camera server")
+        
+        """
+        
         cs = CameraServer.getInstance()
         camera = cs.startAutomaticCapture()
         camera_config = config_parser.cameras[0]
         WIDTH, HEIGHT = camera_config["width"], camera_config["height"]
         camera.setResolution(WIDTH, HEIGHT)
-        self.cvSink = cs.getVideo()
+        self.cvSink = cs.getVideo() 
+        
+        
+        """
+        
+        
+        cs = CameraServer.getInstance()
+        camera = cs.startAutomaticCapture(dev=0, return_server=True)
+        camera_config = config_parser.cameras[0]
+        WIDTH, HEIGHT = camera_config["width"], camera_config["height"]
+        
+        print("WIDTH: " + str(WIDTH) + " HEIGHT: " + str(HEIGHT))
+        camera.setResolution(WIDTH, HEIGHT)
+        camera.setCompression(30)
+        self.cvSink = cs.getVideo()        
+        
+        
+        
+        
+        
         self.img = np.zeros(shape=(HEIGHT, WIDTH, 3), dtype=np.uint8)
         self.output = cs.putVideo("Axon", WIDTH, HEIGHT)
         self.frames = 0
@@ -146,9 +168,6 @@ class Tester:
         # upper boundary RED color range values; Hue (160 - 180)
         lower_red2 = np.array([160,100,20])
         upper_red2 = np.array([179,255,255])
-        
-        min_roi_box_height = 40
-        min_roi_box_width = 40
     
         while True:
             start = time()
@@ -167,7 +186,7 @@ class Tester:
             # output
             boxes, class_ids, scores, x_scale, y_scale = self.get_output(scale)
             for i in range(len(boxes)):
-                if scores[i] > .5:
+                if scores[i] >= .5:
 
                     class_id = class_ids[i]
                     if np.isnan(class_id):
@@ -275,12 +294,12 @@ class Tester:
         # Draw label
         # Look up object name from "labels" array using class index
         label = '%s: %d%%' % (object_name, score * 100)  # Example: 'person: 72%'
-        label_size, base = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 2)  # Get font size
+        label_size, base = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.3, 1)  # Get font size
         label_ymin = max(ymin, label_size[1] + 10)  # Make sure not to draw label too close to top of window
         cv2.rectangle(frame, (xmin, label_ymin - label_size[1] - 10), (xmin + label_size[0], label_ymin + base - 10),
                       (255, 255, 255), cv2.FILLED)
         # Draw label text
-        cv2.putText(frame, label, (xmin, label_ymin - 7), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+        cv2.putText(frame, label, (xmin, label_ymin - 7), cv2.FONT_HERSHEY_SIMPLEX, 0.3, (0, 0, 0), 1)
         return frame
 
     def input_size(self):
