@@ -121,7 +121,7 @@ class Tester:
 
         print("Starting camera server")
         
-        """
+        
         
         cs = CameraServer.getInstance()
         camera = cs.startAutomaticCapture()
@@ -143,7 +143,7 @@ class Tester:
         camera.setResolution(WIDTH, HEIGHT)
         camera.setCompression(30)
         self.cvSink = cs.getVideo()        
-        
+        """
         
         
         
