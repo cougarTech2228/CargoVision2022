@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 from time import time
 import tflite_runtime.interpreter as tflite
-from cscore import CameraServer, VideoSource, UsbCamera, MjpegServer
+from cscore import CameraServer, VideoSource, UsbCamera, MjpegServer, CvSource, VideoMode
 from networktables import NetworkTablesInstance
 import cv2
 import collections
@@ -124,7 +124,12 @@ class Tester:
         
         
         cs = CameraServer.getInstance()
-        camera = cs.startAutomaticCapture()
+        arg = 0
+        name = "USB Camera %d" % arg
+        camera = UsbCamera(name, arg)
+
+        mpeg_server = cs.startAutomaticCapture(camera=camera)
+        mpeg_server.setCompression(30)
         camera_config = config_parser.cameras[0]
         WIDTH, HEIGHT = camera_config["width"], camera_config["height"]
         camera.setResolution(WIDTH, HEIGHT)
@@ -149,7 +154,11 @@ class Tester:
         
         
         self.img = np.zeros(shape=(HEIGHT, WIDTH, 3), dtype=np.uint8)
-        self.output = cs.putVideo("Axon", WIDTH, HEIGHT)
+
+        self.output = CvSource('Axon', VideoMode.PixelFormat.kMJPEG, WIDTH, HEIGHT, 30)
+        axonMjpegServer = cs.startAutomaticCapture(camera=self.output)
+        axonMjpegServer.setCompression(30)
+
         self.frames = 0
 
         self.coral_entry.setString(self.hardware_type)
