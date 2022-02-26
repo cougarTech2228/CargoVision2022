@@ -121,8 +121,6 @@ class Tester:
 
         print("Starting camera server")
         
-        
-        
         cs = CameraServer.getInstance()
         arg = 0
         name = "USB Camera %d" % arg
@@ -134,24 +132,6 @@ class Tester:
         WIDTH, HEIGHT = camera_config["width"], camera_config["height"]
         camera.setResolution(WIDTH, HEIGHT)
         self.cvSink = cs.getVideo() 
-        
-        
-        """
-        
-        
-        cs = CameraServer.getInstance()
-        camera = cs.startAutomaticCapture(dev=0, return_server=True)
-        camera_config = config_parser.cameras[0]
-        WIDTH, HEIGHT = camera_config["width"], camera_config["height"]
-        
-        print("WIDTH: " + str(WIDTH) + " HEIGHT: " + str(HEIGHT))
-        camera.setResolution(WIDTH, HEIGHT)
-        camera.setCompression(30)
-        self.cvSink = cs.getVideo()        
-        """
-        
-        
-        
         
         self.img = np.zeros(shape=(HEIGHT, WIDTH, 3), dtype=np.uint8)
 
@@ -266,9 +246,9 @@ class Tester:
                                 #self.label_frame(frame_cv2, "C:" + str(count_blue) + " P:" + str(total_pixels), boxes[i], scores[i], x_scale, y_scale)
                                 #self.label_frame(frame_cv2, "A:" + str(aspect_ratio), boxes[i], scores[i], x_scale, y_scale)
                                 self.label_frame(frame_cv2, "BlueCargo", boxes[i], scores[i], x_scale, y_scale)
-                            else:                    
+                            #else:                    
                                 #self.label_frame(frame_cv2, "Unknown", boxes[i], scores[i], x_scale, y_scale)
-                                self.label_frame(frame_cv2, "R:" + str(count_red) + "B:" + str(count_blue) + "P:" + str(total_pixels), boxes[i], scores[i], x_scale, y_scale)
+                                #self.label_frame(frame_cv2, "R:" + str(count_red) + "B:" + str(count_blue) + "P:" + str(total_pixels), boxes[i], scores[i], x_scale, y_scale)
 
             self.output.putFrame(frame_cv2)
             self.entry.setString(json.dumps(self.temp_entry))
